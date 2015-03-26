@@ -1,3 +1,6 @@
+from __future__ import print_function
+from __future__ import division
+
 from CoathMaker import *
 from CoOrgMaker import *
 from CoCountyMaker import *
@@ -36,10 +39,8 @@ if __name__ == "__main__":
     monthly_networks = groupby(plst, lambda p: parse_month(p['PD'])
     
     
-    
-    
     for op in NETWORKS:
-        op.__name__
+        print(op.__name__)
         
         # rewrite the 'table' (for each month) as a nx object
         networks = {m: op(n) for m, n in monthly_networks.items()}
