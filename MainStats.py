@@ -56,7 +56,7 @@ if __name__ == "__main__":
         
         # rewrite the 'table' (for each month) as a nx object
         networks = {m: op(n) for m, n in monthly_networks.items()}
-        import IPython; IPython.embed()
+        #import IPython; IPython.embed() #DEBUG
         
         # order by month
         months = sorted(networks.keys()) #XXX this sorted() is duplicated
