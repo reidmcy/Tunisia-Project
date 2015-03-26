@@ -27,7 +27,8 @@ STATS = [
         #TODO: per-node stats. do we average them? take distributions?
         ]
 
-#import pandas
+import pandas
+import matplotlib.pyplot as plt
 
 if __name__ == "__main__":
     # load alllll the papers
@@ -49,27 +50,40 @@ if __name__ == "__main__":
         else:
             return None
     monthly_networks = groupby(papers, reformat_crufty_date)
-    monthly_networks = dict(monthly_networks)
+    monthly_networks = {k: list(v) for k, v in monthly_networks} #expensively construct the full damn things in memory
+    
+    #print(monthly_networks)
     
     for op in NETWORKS:
-        print()
         
         # rewrite the 'table' (for each month) as a nx object
         networks = {m: op(n) for m, n in monthly_networks.items()}
-        #import IPython; IPython.embed() #DEBUG
         
-        # order by month
-        months = sorted(networks.keys()) #XXX this sorted() is duplicated
+        # order by month (XXX probably better to presort before the loop)
+        months = sorted(networks.keys()) #XXX and this sorted() is duplicating the next one
         networks = sorted(networks.items())
         
         # compute data series
         # one per desired statistic
         series = {stat.__name__: [stat(n) for m,n in networks] for stat in STATS}
         
+        #print(months) #<- keys
+        #print(series) #<- values
+        
         # TODO: put into a pandas.DataFrame, then:
         # pandas.write_csv(series, op.__name__+".csv") -or-
         # pandas.plot()
         # in lieu of that:
         
-        print(months) #<- keys
-        print(series) #<- values
+        del series['triangles'] #this won't fit into a DataFrame without more effort; in lieu of effort, delete it
+        
+        table = pandas.DataFrame(series, index=months)
+        #import IPython; IPython.embed() #DEBUG
+        
+        #print(table) #DEBUG
+        for col in table.columns:
+            plt.figure()
+            table[col].plot()
+            plt.title(col)
+        plt.show()
+        
