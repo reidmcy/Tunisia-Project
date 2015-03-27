@@ -1,3 +1,10 @@
+#Our Data
+*.isi
+*.csv
+*.grphml
+*.txt
+*.sh
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

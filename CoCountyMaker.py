@@ -17,7 +17,6 @@ def MakeCoCountry(plst):
                     if retGrph.has_edge(c1, c2):
                         retGrph[c1][c2]['weight'] += 1
                     else:
-                        print str(c1) + ' - ' + str(c2)
                         retGrph.add_edge(c1, c2, weight = 1)
         except KeyError as e:
             print "Key Error"
