@@ -132,7 +132,6 @@ def parse_year(year):
     # parse out the year
     if not isinstance(year, str):
         raise TypeError
-
     if len(year) != 4:
         raise ISIFormatError("Invalid ISI Year '%s'" % (year,))
     try:
@@ -142,9 +141,6 @@ def parse_year(year):
         return _year
     except ValueError:
         raise ISIFormatError("Invalid ISI Year '%s'" % (year,))
-
-
-
 
 def records(isi):
 	"""

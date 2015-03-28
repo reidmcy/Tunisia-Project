@@ -5,66 +5,71 @@ from CoathMaker import *
 from CoOrgMaker import *
 from CoCountyMaker import *
 
-import sys
+from isiparse import parse_year, parse_month
 
-from papersParse import *
-from isiparse import *
+import sys
+import time
+
+import papersParse
 
 from itertools import groupby
 import networkx as nx
 
+import pandas
+import matplotlib.pyplot as plt
+
+binByMonth = False
+
 NETWORKS = [
-        #MakeCoAuth,
+        MakeCoAuth,
         MakeCoCountry,
         MakeCoOrg,
         ]
 
 STATS = [
         nx.density,
-        nx.triangles,
+        #nx.triangles,
         # add more stats methods here
         # (you might need to write lambdas to wrap the arguments appropriately)
         #TODO: per-node stats. do we average them? take distributions? Both?????
         ]
 
-import pandas
-import matplotlib.pyplot as plt
-
 defaultFileType = '.isi'
+
+def reformat_crufty_date(paper):
+    if 'PD' in paper and 'PY' in paper and binByMonth:
+        year = paper['PY']
+        year = year[0] #because stupidness
+        month = paper['PD']
+        month = month[0] #because stupidness
+        return parse_year(year), parse_month(month)
+    elif 'PY' in paper:
+        year = paper['PY'][0]
+        return parse_year(year)
+    else:
+        return None
 
 if __name__ == "__main__":
     # load alllll the papers
     # as a 'table': a list of dictionaries
     papers = []
-    #
     for fname in sys.argv[1:]:
-        papers.extend(isiParser(fname))
+        papers.extend(papersParse.isiParser(fname))
     if len(sys.argv) == 1:
-        for fname in getFiles(defaultFileType):
-            papers.extend(isiParser(fname))
-    # bin by month
-    def reformat_crufty_date(paper):
-        if 'PD' in paper and 'PY' in paper:
-            year = paper['PY']
-            year = year[0] #because stupidness
+        for fname in papersParse.getFiles(defaultFileType):
+            papers.extend(papersParse.isiParser(fname))
 
-            month = paper['PD']
-            month = month[0] #because stupidness
-            return parse_year(year), parse_month(month)
-        else:
-            return None
-    monthly_networks = groupby(papers, reformat_crufty_date)
-    monthly_networks = {k: list(v) for k, v in monthly_networks} #expensively construct the full damn things in memory
+    binNetworks = groupby(papers, reformat_crufty_date)
+    binNetworks = {k: list(v) for k, v in binNetworks} #expensively construct the full damn things in memory
 
     #print(monthly_networks)
 
     for op in NETWORKS:
 
         # rewrite the 'table' (for each month) as a nx object
-        networks = {m: op(n) for m, n in monthly_networks.items()}
-
+        networks = {m: op(n) for m, n in binNetworks.items()}
         # order by month (XXX probably better to presort before the loop)
-        months = sorted(networks.keys()) #XXX and this sorted() is duplicating the next one
+        dates = sorted(networks.keys()) #XXX and this sorted() is duplicating the next one
         networks = sorted(networks.items())
 
         # compute data series
@@ -79,9 +84,9 @@ if __name__ == "__main__":
         # pandas.plot()
         # in lieu of that:
 
-        del series['triangles'] #this won't fit into a DataFrame without more effort; in lieu of effort, delete it
+        #del series['triangles'] #this won't fit into a DataFrame without more effort; in lieu of effort, delete it
 
-        table = pandas.DataFrame(series, index=months)
+        table = pandas.DataFrame(series, index=dates)
         #import IPython; IPython.embed() #DEBUG
 
         #print(table) #DEBUG

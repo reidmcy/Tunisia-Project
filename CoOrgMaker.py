@@ -19,7 +19,7 @@ def MakeCoOrg(plst):
             for i,loc1 in enumerate(p['C1']):
                 c1 = getInstitute(loc1)
                 if c1:
-                    if not retGrph.has_node(c1):
+                    if not retGrph.has_node(c1[0]):
                         retGrph.add_node(c1[0])
                     for loc2 in p['C1'][i + 1:]:
                         c2 = getInstitute(loc2)
