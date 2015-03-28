@@ -25,7 +25,7 @@ def getCountry(s):
         return (clev[-1][:-1], c)
 
 def MakeCoCountry(plst):
-    retGrph = nx.Graph()
+    retGrph = nx.Graph(name = "CoCountry")
     for p in plst:
         try:
             for i,loc1 in enumerate(p['C1']):
@@ -41,12 +41,13 @@ def MakeCoCountry(plst):
                             else:
                                 retGrph.add_edge(c1[0], c2[0], weight = c1[1] + c2[1])
         except KeyError as e:
-            print "Key Error"
+            #print "Key Error"
             #print p.keys()
+            pass
     return retGrph
 
 def MakeCoOrg(plst):
-    retGrph = nx.Graph()
+    retGrph = nx.Graph(name = "CoOrg")
     for p in plst:
         try:
             for i,loc1 in enumerate(p['C1']):
@@ -62,12 +63,13 @@ def MakeCoOrg(plst):
                             else:
                                 retGrph.add_edge(c1[0], c2[0], weight = c1[1] + c2[1])
         except KeyError as e:
-            print "Key Error"
+            #print "Key Error"
             #print p.keys()
+            pass
     return retGrph
 
 def MakeCoAuth(plst):
-    retGrph = nx.Graph()
+    retGrph = nx.Graph(name = "CoAuth")
     for p in plst:
         try:
             for i,auth1 in enumerate(p['AF']):
@@ -81,6 +83,7 @@ def MakeCoAuth(plst):
                     else:
                         retGrph.add_edge(auth1, auth2, weight = 1)
         except KeyError as e:
-            print "Key Error"
+            #print "Key Error"
             #print p.keys()
+            pass
     return retGrph

@@ -2,6 +2,8 @@ from __future__ import print_function
 from __future__ import division
 
 from NetworkMakers import *
+import StatisticsMethods as sm
+
 
 from isiparse import parse_year, parse_month
 
@@ -19,14 +21,16 @@ import matplotlib.pyplot as plt
 binByMonth = False
 
 NETWORKS = [
-        MakeCoAuth,
+        #MakeCoAuth,
+        #MakeCoOrg,
         MakeCoCountry,
-        MakeCoOrg,
         ]
 
 STATS = [
-        nx.density,
+        #nx.density,
         #nx.triangles,
+        #nx.info,
+        sm.getBasicInfo
         ]
 
 defaultFileType = '.isi'
@@ -56,7 +60,6 @@ if __name__ == "__main__":
 
     binNetworks = groupby(papers, reformat_crufty_date)
     binNetworks = {k: list(v) for k, v in binNetworks} #expensively construct the full damn things in memory
-    #print(binNetworks)
 
     for op in NETWORKS:
 
@@ -64,14 +67,25 @@ if __name__ == "__main__":
         networks = {m: op(n) for m, n in binNetworks.items()}
         # order by month (XXX probably better to presort before the loop)
         networks = {m: networks[m] for m in filter(lambda x: x[0] != 2015, networks.keys())}
-        dates = sorted(networks.keys()) #XXX and this sorted() is duplicating the next one
-        networks = sorted(networks.items())
+        for m in networks.keys():
+            if binByMonth:
+                networks[m].name += ' ' + str(m[0]) + ' ' + str(m[1])
+            else:
+                networks[m].name += ' ' + str(m[0])
+            print(networks[m].name)
+        #dates = sorted(networks.keys()) #XXX and this sorted() is duplicating the next one
+        #networks = sorted(networks.items())
 
         # compute data series
         # one per desired statistic
+
+        for stat in STATS:
+            stat(networks)
+
+        """
         series = {stat.__name__: [stat(n) for m,n in networks] for stat in STATS}
 
-        print(dates) #<- keys
+        #print(dates) #<- keys
         #print(series) #<- values
 
         # TODO: put into a pandas.DataFrame, then:
@@ -80,8 +94,12 @@ if __name__ == "__main__":
         # in lieu of that:
 
         #del series['triangles'] #this won't fit into a DataFrame without more effort; in lieu of effort, delete it
+        for v in series.values():
+            print(v)
+
 
         table = pandas.DataFrame(series, index=dates)
+        #print(table)
         #import IPython; IPython.embed() #DEBUG
 
         #print(table) #DEBUG
@@ -90,4 +108,5 @@ if __name__ == "__main__":
             table[col].plot()
             plt.title(op.__name__[4:] + ' ' + col)
         plt.show()
+        """
         print("Done " + op.__name__)
