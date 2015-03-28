@@ -1,9 +1,7 @@
 from __future__ import print_function
 from __future__ import division
 
-from CoathMaker import *
-from CoOrgMaker import *
-from CoCountyMaker import *
+from NetworkMakers import *
 
 from isiparse import parse_year, parse_month
 
@@ -29,9 +27,6 @@ NETWORKS = [
 STATS = [
         nx.density,
         #nx.triangles,
-        # add more stats methods here
-        # (you might need to write lambdas to wrap the arguments appropriately)
-        #TODO: per-node stats. do we average them? take distributions? Both?????
         ]
 
 defaultFileType = '.isi'
@@ -45,7 +40,7 @@ def reformat_crufty_date(paper):
         return parse_year(year), parse_month(month)
     elif 'PY' in paper:
         year = paper['PY'][0]
-        return parse_year(year)
+        return (parse_year(year), 0)
     else:
         return None
 
@@ -61,14 +56,14 @@ if __name__ == "__main__":
 
     binNetworks = groupby(papers, reformat_crufty_date)
     binNetworks = {k: list(v) for k, v in binNetworks} #expensively construct the full damn things in memory
-
-    #print(monthly_networks)
+    #print(binNetworks)
 
     for op in NETWORKS:
 
         # rewrite the 'table' (for each month) as a nx object
         networks = {m: op(n) for m, n in binNetworks.items()}
         # order by month (XXX probably better to presort before the loop)
+        networks = {m: networks[m] for m in filter(lambda x: x[0] != 2015, networks.keys())}
         dates = sorted(networks.keys()) #XXX and this sorted() is duplicating the next one
         networks = sorted(networks.items())
 
@@ -76,7 +71,7 @@ if __name__ == "__main__":
         # one per desired statistic
         series = {stat.__name__: [stat(n) for m,n in networks] for stat in STATS}
 
-        #print(months) #<- keys
+        print(dates) #<- keys
         #print(series) #<- values
 
         # TODO: put into a pandas.DataFrame, then:
@@ -93,5 +88,6 @@ if __name__ == "__main__":
         for col in table.columns:
             plt.figure()
             table[col].plot()
-            plt.title(col)
+            plt.title(op.__name__[4:] + ' ' + col)
         plt.show()
+        print("Done " + op.__name__)
