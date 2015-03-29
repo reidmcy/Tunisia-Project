@@ -24,8 +24,11 @@ NETWORKS = [
 STATS = [
         #sm.getBasicInfo,
         #sm.ExportGraphs,
-        #sm.getDensity,
-        sm.getAverageDegree,
+        sm.getDensity,
+        sm.getSize,
+        sm.getAverageDegree, #<--- these two are almost perfectly correlated, which is a super strong suggestion that the degree distribution is exponential, which is the only(?) distribution with mean equal to standard deviation
+        sm.getStdDevDegree,
+        sm.getDegree2d,
         ]
 
 defaultFileType = '.isi'

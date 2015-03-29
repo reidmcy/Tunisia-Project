@@ -1,10 +1,12 @@
 from __future__ import division
 from __future__ import print_function
 
+import numpy
 import networkx as nx
 import os
 import pandas
 import matplotlib.pyplot as plt
+import matplotlib
 import IPython
 
 outputDirectory = "OutputGraphs"
@@ -49,8 +51,53 @@ def getDensity(nets):
     plt.show()
 
 def mean(l):
-        l = list(l)
-        return sum(l)/len(l)
+    return numpy.array(list(l)).mean()
+
+def std(l): #omg why
+    return numpy.array(list(l)).std()
+
+def getDegree2d(nets):
+    """
+    make a 2d histogram with axes: date, degree
+    """
+    
+    dates = []
+    degrees = []
+    for date in sorted(nets.keys()):
+        if type(date) is tuple:
+            # kludgily map (year,month) tuples to an absolute month index
+            # pandas.plot() is smart enough to handle tuples
+            # but pandas doesn't have hist2d, so we do this
+            year, month = date
+            _date = 12*(year - 2006) + month # < uugh 
+        else:
+            _date = date
+        for node in nets[date]:
+            degrees.append(nets[date].degree(node))
+            
+            dates.append(_date) #intentionally make dupes, so that hist2d
+    
+    #IPython.embed()
+    plt.figure()
+    plt.hist2d(dates, degrees, norm=matplotlib.colors.LogNorm(), bins=15)
+    plt.colorbar()
+    
+    plt.title(str(list(nets.values())[0]).split('_')[0] + ' Degree Distributions over Time')
+    plt.show()
+
+def getSize(nets): #:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(
+    #IPython.embed()
+    stat = []
+    time = []
+    
+    for k in nets.keys():
+        stat.append(len(nets[k].degree().values()))
+    d = pandas.DataFrame({'size': stat}, index = nets.keys())
+    d = d.sort()
+    #plt.figure() #duplicate??
+    d.plot()
+    plt.title(str(list(nets.values())[0]).split('_')[0] + ' Size')
+    plt.show()
 
 def getAverageDegree(nets):
     #IPython.embed()
@@ -60,7 +107,20 @@ def getAverageDegree(nets):
         stat.append(mean(nets[k].degree().values()))
     d = pandas.DataFrame({'avgdegree': stat}, index = nets.keys())
     d = d.sort()
-    plt.figure()
+    #plt.figure() #duplicate??
     d.plot()
     plt.title(str(list(nets.values())[0]).split('_')[0] + ' Average Degree')
+    plt.show()
+
+def getStdDevDegree(nets): #:( :( :(
+    #IPython.embed()
+    stat = []
+    time = []
+    for k in nets.keys():
+        stat.append(std(nets[k].degree().values()))
+    d = pandas.DataFrame({'stddev_degree': stat}, index = nets.keys())
+    d = d.sort()
+    #plt.figure() #duplicate??
+    d.plot()
+    plt.title(str(list(nets.values())[0]).split('_')[0] + ' Degree Std Deviation')
     plt.show()
