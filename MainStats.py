@@ -13,10 +13,11 @@ import matplotlib.pyplot as plt
 
 binByMonth = False
 suppressGraphs = False
+removeTunsia = True
 
 NETWORKS = [
-        MakeCoAuth,
-        MakeCoOrg,
+        #MakeCoAuth,
+        #MakeCoOrg,
         MakeCoCountry,
         ]
 
@@ -30,17 +31,26 @@ STATS = [
 defaultFileType = '.isi'
 
 def reformat_crufty_date(paper):
-    if 'PD' in paper and 'PY' in paper and binByMonth:
+    if ('PD' in paper) and ('PY' in paper) and binByMonth:
         year = paper['PY']
         year = year[0] #because stupidness
         month = paper['PD']
         month = month[0] #because stupidness
         return parse_year(year), parse_month(month)
-    elif 'PY' in paper:
+    elif 'PY' in paper and not binByMonth:
         year = paper['PY'][0]
         return (parse_year(year), 0)
     else:
-        return None
+        return (-1, -1)
+
+def filteringNetworks(nets):
+    retDict = {}
+    for m in nets.keys():
+        if m[0] != 2015 and m[0] != -1:
+            retDict[m] = nets[m]
+            if removeTunsia and retDict[m].has_node('Tunisia'):
+                retDict[m].remove_node('Tunisia')
+    return retDict
 
 if __name__ == "__main__":
     if suppressGraphs:
@@ -59,7 +69,7 @@ if __name__ == "__main__":
         # rewrite the 'table' (for each month) as a nx object
         networks = {m: op(n) for m, n in binNetworks.items()}
         # order by month (XXX probably better to presort before the loop)
-        networks = {m: networks[m] for m in filter(lambda x: x[0] != 2015, networks.keys())}
+        networks = filteringNetworks(networks)
         for m in networks.keys():
             if binByMonth:
                 networks[m].name += '_' + str(m[0]) + '-' + str(m[1])
