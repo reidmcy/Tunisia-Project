@@ -18,14 +18,15 @@ removeTunsia = True
 NETWORKS = [
         #MakeCoAuth,
         #MakeCoOrg,
-        MakeCoCountry,
+        MakeCoCity,
+        #MakeCoCountry,
         ]
 
 STATS = [
         #sm.getBasicInfo,
-        #sm.ExportGraphs,
-        #sm.getDensity,
-        sm.getAverageDegree,
+        sm.ExportGraphs,
+        sm.getDensity,
+        #sm.getAverageDegree,
         ]
 
 defaultFileType = '.isi'
