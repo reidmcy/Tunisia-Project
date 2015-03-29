@@ -38,7 +38,7 @@ def MakeCoCountry(plst):
                         if c2:
                             if retGrph.has_edge(c1[0], c2[0]):
                                 retGrph[c1[0]][c2[0]]['weight'] += c1[1] + c2[1]
-                            else:
+                            elif c1[0] != c2[0]:
                                 retGrph.add_edge(c1[0], c2[0], weight = c1[1] + c2[1])
         except KeyError as e:
             #print "Key Error"
@@ -60,7 +60,7 @@ def MakeCoOrg(plst):
                         if c2:
                             if retGrph.has_edge(c1[0], c2[0]):
                                 retGrph[c1[0]][c2[0]]['weight'] += c1[1] + c2[1]
-                            else:
+                            elif c1[0] != c2[0]:
                                 retGrph.add_edge(c1[0], c2[0], weight = c1[1] + c2[1])
         except KeyError as e:
             #print "Key Error"
@@ -80,7 +80,7 @@ def MakeCoAuth(plst):
                         retGrph.add_node(auth2)
                     if retGrph.has_edge(auth1, auth2):
                         retGrph[auth1][auth2]['weight'] += 1
-                    else:
+                    elif auth1 != auth2:
                         retGrph.add_edge(auth1, auth2, weight = 1)
         except KeyError as e:
             #print "Key Error"

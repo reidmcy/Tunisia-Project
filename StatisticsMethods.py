@@ -6,6 +6,9 @@ import matplotlib.pyplot as plt
 outputDirectory = "OutputGraphs"
 
 def sci2IsNotGood(fname):
+    """
+    Parsing xml without a parse is always a good idea
+    """
     c = open(fname).readlines()
     f = open(fname, 'w')
     for l in c:
@@ -37,4 +40,20 @@ def getDensity(nets):
         plt.figure()
         table[col].plot()
         plt.title(str(networks[0][1]).split('_')[0] + ' ' + col)
+    plt.show()
+
+def mean(l):
+        l = list(l)
+        return sum(l)/len(l)
+
+def getAverageDegree(nets):
+    x =[]
+    y =[]
+    for k in nets.keys():
+        y.append(mean(nets[k].degree().values()))
+        print k
+        x.append(k[0])
+    plt.figure()
+    plt.scatter(x,y)
+    plt.title(str(nets.values()[0]).split('_')[0] + ' Average Degree')
     plt.show()

@@ -9,8 +9,10 @@ import StatisticsMethods as sm
 import sys
 from itertools import groupby
 import networkx as nx
+import matplotlib.pyplot as plt
 
-binByMonth = True
+binByMonth = False
+suppressGraphs = False
 
 NETWORKS = [
         MakeCoAuth,
@@ -19,9 +21,10 @@ NETWORKS = [
         ]
 
 STATS = [
-        sm.getBasicInfo,
+        #sm.getBasicInfo,
         #sm.ExportGraphs,
-        sm.getDensity,
+        #sm.getDensity,
+        sm.getAverageDegree,
         ]
 
 defaultFileType = '.isi'
@@ -40,6 +43,8 @@ def reformat_crufty_date(paper):
         return None
 
 if __name__ == "__main__":
+    if suppressGraphs:
+        plt.interactive(True)
     # load alllll the papers
     # as a 'table': a list of dictionaries
     papers = []
@@ -60,7 +65,6 @@ if __name__ == "__main__":
                 networks[m].name += '_' + str(m[0]) + '-' + str(m[1])
             else:
                 networks[m].name += '_' + str(m[0])
-            print(networks[m].name)
         for stat in STATS:
             stat(networks)
         print("Done " + op.__name__)
