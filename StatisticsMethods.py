@@ -1,3 +1,6 @@
+from __future__ import division
+from __future__ import print_function
+
 import networkx as nx
 import os
 import pandas
@@ -18,7 +21,8 @@ def sci2IsNotGood(fname):
 
 def getBasicInfo(nets):
     for k in nets.keys():
-        print nx.info(nets[k]) + '\n'
+        print(nx.info(nets[k]))
+        print()
 
 def ExportGraphs(nets):
     if os.path.exists(outputDirectory):
@@ -27,7 +31,7 @@ def ExportGraphs(nets):
         os.mkdir(outputDirectory)
         os.chdir(outputDirectory)
     for v in nets.values():
-        print "writing " + v.name
+        print("writing " + v.name)
         nx.write_graphml(v, v.name + '.graphml')
         sci2IsNotGood(v.name + '.graphml') #modifie xml so sci2 can read it
     os.chdir('..')
@@ -57,5 +61,5 @@ def getAverageDegree(nets):
     d = d.sort()
     plt.figure()
     d.plot()
-    plt.title(str(nets.values()[0]).split('_')[0] + ' Average Degree')
+    plt.title(str(list(nets.values())[0]).split('_')[0] + ' Average Degree')
     plt.show()

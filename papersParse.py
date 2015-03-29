@@ -1,6 +1,9 @@
 #Written by Reid McIlroy-Young for John McLevey
 #Useful functions for parsing isi files
 
+from __future__ import division
+from __future__ import print_function
+
 import os
 import sys
 
@@ -42,7 +45,7 @@ def isiParser(isifile):
     plst = []
     while notEnd:
         try:
-            l = f.next()
+            l = next(f)
         except StopIteration as e:
             raise BadPaper("File ends before EF found")
         if not l:
@@ -64,7 +67,7 @@ def isiParser(isifile):
                  raise e
     try:
         f.next()
-        print "EF not at end of " + isifile
+        print("EF not at end of " + isifile)
     except StopIteration as e:
         pass
     finally:
@@ -78,6 +81,6 @@ def getFiles(suffix='.isi'):
     fls = sys.argv[1:] if sys.argv[1:] else [f for f in os.listdir(".") if f.endswith(suffix)]
     if len(fls) == 0:
         #checks for any valid files
-        print "No " + suffix + " Files"
+        print("No " + suffix + " Files")
         sys.exit()
     return fls
