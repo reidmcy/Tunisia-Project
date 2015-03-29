@@ -1,9 +1,10 @@
 #Our Data
 *.isi
 *.csv
-*.grphml
+*.graphml
 *.txt
 *.sh
+OutputGraphs*/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

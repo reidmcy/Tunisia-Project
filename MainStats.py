@@ -18,11 +18,11 @@ import networkx as nx
 import pandas
 import matplotlib.pyplot as plt
 
-binByMonth = False
+binByMonth = True
 
 NETWORKS = [
-        #MakeCoAuth,
-        #MakeCoOrg,
+        MakeCoAuth,
+        MakeCoOrg,
         MakeCoCountry,
         ]
 
@@ -30,7 +30,8 @@ STATS = [
         #nx.density,
         #nx.triangles,
         #nx.info,
-        sm.getBasicInfo
+        sm.getBasicInfo,
+        #sm.ExportGraphs
         ]
 
 defaultFileType = '.isi'
@@ -69,9 +70,9 @@ if __name__ == "__main__":
         networks = {m: networks[m] for m in filter(lambda x: x[0] != 2015, networks.keys())}
         for m in networks.keys():
             if binByMonth:
-                networks[m].name += ' ' + str(m[0]) + ' ' + str(m[1])
+                networks[m].name += '_' + str(m[0]) + '-' + str(m[1])
             else:
-                networks[m].name += ' ' + str(m[0])
+                networks[m].name += '_' + str(m[0])
             print(networks[m].name)
         #dates = sorted(networks.keys()) #XXX and this sorted() is duplicating the next one
         #networks = sorted(networks.items())
