@@ -2,6 +2,7 @@ import networkx as nx
 import os
 import pandas
 import matplotlib.pyplot as plt
+import IPython
 
 outputDirectory = "OutputGraphs"
 
@@ -47,13 +48,14 @@ def mean(l):
         return sum(l)/len(l)
 
 def getAverageDegree(nets):
-    x =[]
-    y =[]
+    #IPython.embed()
+    stat = []
+    time = []
     for k in nets.keys():
-        y.append(mean(nets[k].degree().values()))
-        print k
-        x.append(k[0])
+        stat.append(mean(nets[k].degree().values()))
+    d = pandas.DataFrame({'avgdegree': stat}, index = nets.keys())
+    d = d.sort()
     plt.figure()
-    plt.scatter(x,y)
+    d.plot()
     plt.title(str(nets.values()[0]).split('_')[0] + ' Average Degree')
     plt.show()
