@@ -1,40 +1,24 @@
 from __future__ import division
 from __future__ import print_function
 
+import numpy
 import networkx as nx
 import os
 import pandas
 import matplotlib.pyplot as plt
+import matplotlib
 import IPython
 
-outputDirectory = "OutputGraphs"
+from scipy.stats import chisquare
 
-def sci2IsNotGood(fname):
-    """
-    Parsing xml without a parse is always a good idea
-    """
-    c = open(fname).readlines()
-    f = open(fname, 'w')
-    for l in c:
-        if 'for="graph"' not in l and '<data key="d0">' not in l:
-            f.write(l)
+
 
 def getBasicInfo(nets):
     for k in nets.keys():
         print(nx.info(nets[k]))
         print()
 
-def ExportGraphs(nets):
-    if os.path.exists(outputDirectory):
-        os.chdir(outputDirectory)
-    else:
-        os.mkdir(outputDirectory)
-        os.chdir(outputDirectory)
-    for v in nets.values():
-        print("writing " + v.name)
-        nx.write_graphml(v, v.name + '.graphml')
-        sci2IsNotGood(v.name + '.graphml') #modifie xml so sci2 can read it
-    os.chdir('..')
+
 
 def getDensity(nets):
     dates = sorted(nets.keys()) #XXX and this sorted() is duplicating the next one
@@ -48,11 +32,61 @@ def getDensity(nets):
     plt.show()
 
 def mean(l):
+<<<<<<< HEAD
         l = list(l)
         if l:
             return sum(l)/len(l)
         else:
             return 0
+=======
+    return numpy.array(list(l)).mean()
+
+def std(l): #omg why
+    return numpy.array(list(l)).std()
+
+def getDegree2d(nets):
+    """
+    make a 2d histogram with axes: date, degree
+    """
+    
+
+
+
+
+# API:
+# network -> scalar statistic
+
+# tmap(size, networks -> series of statistic
+
+#{k: stat(n) for for 
+
+
+def chisq(series, p = 0.05):
+    """
+    ugly chisquared test on a single-dimensional dataset
+    
+    true if statistically significant
+    """
+    
+    series = numpy.array(series) 
+    L, cp = chisquare(series)
+    # true if observed p-value (cp) is smaller than cutoff (p)
+    return cp <= p
+    
+def getSize(nets): #:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(
+    #IPython.embed()
+    stat = []
+    time = []
+    
+    for k in nets.keys():
+        stat.append(len(nets[k].degree().values()))
+    d = pandas.DataFrame({'size': stat}, index = nets.keys())
+    d = d.sort()
+    #plt.figure() #duplicate??
+    d.plot()
+    plt.title(str(list(nets.values())[0]).split('_')[0] + ' Size')
+    plt.show()
+>>>>>>> d9bea74b82228b4ed3278d18dade4dc7fa78572a
 
 def getAverageDegree(nets):
     #IPython.embed()
@@ -63,7 +97,20 @@ def getAverageDegree(nets):
         stat.append(mean(nets[k].degree().values()))
     d = pandas.DataFrame({'avgdegree': stat}, index = nets.keys())
     d = d.sort()
-    plt.figure()
+    #plt.figure() #duplicate??
     d.plot()
     plt.title(str(list(nets.values())[0]).split('_')[0] + ' Average Degree')
+    plt.show()
+
+def getStdDevDegree(nets): #:( :( :(
+    #IPython.embed()
+    stat = []
+    time = []
+    for k in nets.keys():
+        stat.append(std(nets[k].degree().values()))
+    d = pandas.DataFrame({'stddev_degree': stat}, index = nets.keys())
+    d = d.sort()
+    #plt.figure() #duplicate??
+    d.plot()
+    plt.title(str(list(nets.values())[0]).split('_')[0] + ' Degree Std Deviation')
     plt.show()

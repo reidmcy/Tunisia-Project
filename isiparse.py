@@ -131,7 +131,7 @@ def parse_month(m):
 def parse_year(year):
     # parse out the year
     if not isinstance(year, str):
-        raise TypeError
+        raise TypeError("expected str; got %s" % (type(year),))
     if len(year) != 4:
         raise ISIFormatError("Invalid ISI Year '%s'" % (year,))
     try:

@@ -1,4 +1,17 @@
+
+from __future__ import print_function
+from __future__ import division
+
 import networkx as nx
+
+import os
+
+__all__ = [
+        "MakeCoAuth",
+        "MakeCoOrg",
+        "MakeCoCity",
+        "MakeCoCountry",
+        ]
 
 def getInstitute(s):
     if s[0] == '[':
@@ -123,3 +136,9 @@ def MakeCoAuth(plst):
             #print p.keys()
             pass
     return retGrph
+
+
+
+
+if __name__ == '__main__':
+    print("This is a utility module, not a program.")
