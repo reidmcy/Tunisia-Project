@@ -17,6 +17,9 @@ from util import *
 import argparse
 import logging
 
+
+import numpy
+
 # TODO:
 # [ ] repair naming and titling of plots and output files
 # [ ] pull ExportGraphs out
@@ -44,11 +47,20 @@ def display(f):
         return r
     return v
 
-def average(stat):
-    return None
+def vectorize_per_node_stat(stat):
+    def w(G):
+        return numpy.array([stat(G,n) for n in G])
+    return w
 
+def average(stat):
+    def w(G):
+        return vectorize_per_node_stat(stat)(G).mean()
+    return w
+    
 def stddev(stat):
-    return None
+    def w(G):
+        return vectorize_per_node_stat(stat)(G).std()
+    return w
     
 def hist2d(stat):
     def ff(nets):
@@ -115,11 +127,19 @@ degree_centrality._original, nx.degree_centrality = nx.degree_centrality, degree
 del degree_centrality;
 
     
-PER_NODE_STATS = {
-    'degree': lambda G, n: G.degree(n),
-    '': None
+PER_NODE_STATS = { #these are computed suuuuuper inefficiently; maybe memoize them?
+    'Degree Centrality': dbg(lambda G, n: nx.degree_centrality(G)[n] ), #'if len(G)' works around a bug in degree_centrality: it doesn't know how to handle single-node networks. Jerk.
+    'Betweenness Centrality': lambda G, n: nx.betweenness_centrality(G)[n], #factorable?
+    'Clustering Coefficient': lambda G, n: nx.clustering(G, n), #factorable? (maybe not: not all nx ops have the same signature)
     } 
 
+STATS = {
+    'Size': lambda G: len(G),
+    'Density': nx.density,
+    }
+STATS.update({"Average "+k: average(f) for k, f in PER_NODE_STATS.items()})
+STATS.update({"StdDev "+k: stddev(f) for k, f in PER_NODE_STATS.items()})
+#STATS.update({"hist2d "+k: hist2d(f) for k, f in PER_NODE_STATS.items()}) #TODO
 
 # operations which take all bins of networks at once
 # made by collecting the above stats and adding some more
@@ -127,10 +147,7 @@ ANALYSES = {
     'info': vectorize(display(nx.info)),
     #'export': sm.ExportGraphs,
     }
-ANALYSES.update({k: vectorize(f) for k, f in GLOBAL_STATS.items()})
-ANALYSES.update({"average_"+k: average(f) for k, f in PER_NODE_STATS.items()})
-ANALYSES.update({"stddev_"+k: stddev(f) for k, f in PER_NODE_STATS.items()})
-ANALYSES.update({"hist2d_"+k: hist2d(f) for k, f in PER_NODE_STATS.items()})
+#ANALYSES.update({k: vectorize(f) for k, f in GLOBAL_STATS.items()})
 
 
 def node_remover(f, *nodes): #hmmmm. badly named?? or.. something? hmm
@@ -141,7 +158,9 @@ def node_remover(f, *nodes): #hmmmm. badly named?? or.. something? hmm
         G = f(*args, **kwargs)
         for node in nodes:
             if node in G:
-                del G[node]
+                #del G[node]
+                # whyyyyyyyyy
+                G.remove_node(node)
         return G
     return w
 
@@ -250,7 +269,16 @@ def init(argv, ap=None):
         print("No data files given.")
         ap.print_usage()
         sys.exit(-1)
-    documents = flatten(papersParse.isiParser(fname) for fname in args.papers) #TODO: replace the inner seq with a generator so this doesn't lag so hard
+    
+    return args
+
+def load(*documents):
+    """
+    load documents from the given list of filenames
+    """
+    global args
+    
+    documents = flatten(papersParse.isiParser(fname) for fname in documents) #TODO: replace the inner seq with a generator so this doesn't lag so hard
     
     if args.debug:
         # DEBUG
@@ -259,18 +287,6 @@ def init(argv, ap=None):
         documents = list(documents)
         random.shuffle(documents)
     
-    return args, documents
-
-def main(argv):
-    # enable nonblocking matplotlib
-    # this makes *all plots appear at once* if -p is given
-    plt.interactive(True)
-    
-    # read command line arguments and load data
-    global args #XXX sketchy
-    args = argparse.ArgumentParser(description="Compute statistics over time for our project")
-    args.add_argument("-p", "--plots", action="store_true", help="Display plots; if false, plots will be saved to files")
-    args, documents = init(argv, args)
     
     # filter out badly dated documents
     documents = (d for d in documents if valid_date(date(d, not args.years)))
@@ -281,6 +297,7 @@ def main(argv):
         #DEBUG: ensure we get the same number of documents back
         documents = list(documents) #need to express the whole sequence that we may take its len
         N = len(documents)
+    logging.debug("grouping documents by date")
     documents_over_time = bin_documents(documents, not args.years)
     if args.debug:
         documents_over_time = [(k,list(v)) for k, v in documents_over_time.items()] #express fully that we may interrogate and still use
@@ -288,13 +305,35 @@ def main(argv):
     
     # rewrite the paper bins as networks
     # we do this all at once for simplicity, but it might be possible to get this more efficient (however, remember that documents_over_time can only be iterated once
-    networks = {(net_type, date): network_maker(paper_bin)
-                                for date, paper_bin in documents_over_time
+    logging.debug("transforming groups into networks")
+    networks = {(net_type, date): network_maker(bin)
+                                for date, bin in documents_over_time
                                 for net_type, network_maker in NETWORK_TYPES.items()
                                 }
     
-    # for each (network type, date, statistic) compute and store the network single scalar value of that statistic measured on that network
+    return networks
+
+def main(argv):
+    # enable nonblocking matplotlib
+    # this makes *all plots appear at once* if -p is given
+    plt.interactive(True)
     
+    # read command line arguments and load data
+    global args #XXX sketchy
+    args = argparse.ArgumentParser(description="Compute statistics over time for our project")
+    args.add_argument("-p", "--plots", action="store_true", help="Display plots; if false, plots will be saved to files")
+    args = init(argv, args)
+    
+    networks = load(*args.papers)
+    
+    # for each (network type, date, statistic) compute and store the network single scalar value of that statistic measured on that network
+    logging.debug("computing statistics")
+    statistics = {(net_type, date, stat_name): stat(net)
+                                            for stat_name, stat in STATS.items()
+                                            for (net_type, date), net in networks.items()
+                                            }
+    
+    # reflow that dict into a DataFrame
     import IPython; IPython.embed()
     
     # make plots

@@ -40,3 +40,28 @@ def parse_american_int(c):
         raise TypeError
     #dirty hack; also what SO decided on: http://stackoverflow.com/questions/2953746/python-parse-comma-separated-number-into-int
     return int(c.replace(",",""))
+    
+    
+def dbg(f):
+    """
+    wrap a function to
+     i. print its inputs and outputs
+    ii. drop exceptions to a shell, for 
+    """
+    import traceback
+    def ff(*args, **kwargs):
+        try:
+            r = f(*args, **kwargs)
+            return r
+        except Exception as exc:
+            r = exc
+            
+            print("Exception in %s%s:" % (f.__name__, args,))
+            traceback.print_exc()
+            print("locals:")
+            print(locals())
+            import IPython; IPython.embed()
+        finally:
+            print("%s(*%s,**%s) = %s" % (f.__name__, args, kwargs, repr(r)))
+    return ff
+
