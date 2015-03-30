@@ -367,11 +367,8 @@ if __name__ == "__main__":
         subset.plot(title=stat_name)
         
         if not args.plots:
-            plt.savefig("stat_name.svg")
-        
-    #import IPython; IPython.embed();
+            plt.savefig("%s.svg" % stat_name)
     
-    # make plots
     
     # block so the user can see plots
     # (we do this instead of just letting plt.show() block because this way all plots appear side-by-side)
