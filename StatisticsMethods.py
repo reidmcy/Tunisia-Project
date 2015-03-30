@@ -49,10 +49,14 @@ def getDensity(nets):
 
 def mean(l):
         l = list(l)
-        return sum(l)/len(l)
+        if l:
+            return sum(l)/len(l)
+        else:
+            return 0
 
 def getAverageDegree(nets):
     #IPython.embed()
+    print(str(list(nets.values())[0]).split('_')[0] + ' Average Degree')
     stat = []
     time = []
     for k in nets.keys():

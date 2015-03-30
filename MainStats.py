@@ -11,22 +11,22 @@ from itertools import groupby
 import networkx as nx
 import matplotlib.pyplot as plt
 
-binByMonth = False
+binByMonth = True
 suppressGraphs = False
 removeTunsia = True
 
 NETWORKS = [
-        #MakeCoAuth,
+        MakeCoAuth,
         #MakeCoOrg,
         MakeCoCity,
-        #MakeCoCountry,
+        MakeCoCountry,
         ]
 
 STATS = [
         #sm.getBasicInfo,
-        sm.ExportGraphs,
-        sm.getDensity,
-        #sm.getAverageDegree,
+        #sm.ExportGraphs,
+        #sm.getDensity,
+        sm.getAverageDegree,
         ]
 
 defaultFileType = '.isi'
