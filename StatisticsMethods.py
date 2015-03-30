@@ -9,6 +9,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 import IPython
 
+from scipy.stats import chisquare
+
 outputDirectory = "OutputGraphs"
 
 def sci2IsNotGood(fname):
@@ -26,17 +28,7 @@ def getBasicInfo(nets):
         print(nx.info(nets[k]))
         print()
 
-def ExportGraphs(nets):
-    if os.path.exists(outputDirectory):
-        os.chdir(outputDirectory)
-    else:
-        os.mkdir(outputDirectory)
-        os.chdir(outputDirectory)
-    for v in nets.values():
-        print("writing " + v.name)
-        nx.write_graphml(v, v.name + '.graphml')
-        sci2IsNotGood(v.name + '.graphml') #modifie xml so sci2 can read it
-    os.chdir('..')
+
 
 def getDensity(nets):
     dates = sorted(nets.keys()) #XXX and this sorted() is duplicating the next one
@@ -60,30 +52,30 @@ def getDegree2d(nets):
     make a 2d histogram with axes: date, degree
     """
     
-    dates = []
-    degrees = []
-    for date in sorted(nets.keys()):
-        if type(date) is tuple:
-            # kludgily map (year,month) tuples to an absolute month index
-            # pandas.plot() is smart enough to handle tuples
-            # but pandas doesn't have hist2d, so we do this
-            year, month = date
-            _date = 12*(year - 2006) + month # < uugh 
-        else:
-            _date = date
-        for node in nets[date]:
-            degrees.append(nets[date].degree(node))
-            
-            dates.append(_date) #intentionally make dupes, so that hist2d
-    
-    #IPython.embed()
-    plt.figure()
-    plt.hist2d(dates, degrees, norm=matplotlib.colors.LogNorm(), bins=15)
-    plt.colorbar()
-    
-    plt.title(str(list(nets.values())[0]).split('_')[0] + ' Degree Distributions over Time')
-    plt.show()
 
+
+
+
+# API:
+# network -> scalar statistic
+
+# tmap(size, networks -> series of statistic
+
+#{k: stat(n) for for 
+
+
+def chisq(series, p = 0.05):
+    """
+    ugly chisquared test on a single-dimensional dataset
+    
+    true if statistically significant
+    """
+    
+    series = numpy.array(series) 
+    L, cp = chisquare(series)
+    # true if observed p-value (cp) is smaller than cutoff (p)
+    return cp <= p
+    
 def getSize(nets): #:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(
     #IPython.embed()
     stat = []

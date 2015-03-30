@@ -1,4 +1,15 @@
+
+from __future__ import print_function
+from __future__ import division
+
 import networkx as nx
+
+__all__ = [
+        "MakeCoAuth",
+        "MakeCoOrg",
+        "MakeCoCity",
+        "MakeCoCountry",
+        ]
 
 def getInstitute(s):
     if s[0] == '[':
@@ -125,3 +136,18 @@ def MakeCoAuth(plst):
             #print p.keys()
             pass
     return retGrph
+
+def ExportGraphs(nets):
+    if os.path.exists(outputDirectory):
+        os.chdir(outputDirectory)
+    else:
+        os.mkdir(outputDirectory)
+        os.chdir(outputDirectory)
+    for v in nets.values():
+        print("writing " + v.name)
+        nx.write_graphml(v, v.name + '.graphml')
+        sci2IsNotGood(v.name + '.graphml') #modifie xml so sci2 can read it
+    os.chdir('..')
+
+if __name__ == '__main__':
+    print("This is a utility module, not a program.")
