@@ -301,7 +301,7 @@ def init(argv, ap=None):
     
     ap.add_argument("-d", "--debug", action="store_true", help="Enable debug prints")
     ap.add_argument("-y", "--years", action="store_true", help="Bin by year; if false, will bin by month")
-    ap.add_argument("--notunisia", action="store_true", help="Include Tunisia in co-country networks")
+    ap.add_argument("--notunisia", action="store_true", help="Remove Tunisia from co-country networks")
     ap.add_argument("documents", nargs="*", help="Files to load from. If not given, **the current directory is scanned for .{isi,ciw} files**")
     args = ap.parse_args(argv[1:])
     
@@ -332,13 +332,13 @@ if __name__ == "__main__":
     
     # read command line arguments and load data
     global args #XXX sketchy
-    args = argparse.ArgumentParser(description="Compute statistics over time for our project")
-    args.add_argument("-p", "--plots", action="store_true", help="Display plots; if false, plots will be saved to files")
-    args.add_argument("-N", action="append", help="Enable network type N; default is all options: %s. " % ", ".join(sorted(NETWORK_TYPES)))
-    args.add_argument("-S", action="append", help="Enable statistic S; default is all options: %s" % ", ".join(sorted(STATS)))
-    args, networks = init(sys.argv, args)
+    ap = argparse.ArgumentParser(description="Compute statistics over time for our project.")
+    ap.add_argument("-p", "--plots", action="store_true", help="Display plots; if false, plots will be saved to files")
+    ap.add_argument("-N", metavar="NET", action="append", help="Enable network type %(metavar)s; default is all options.", choices = sorted(NETWORK_TYPES))
+    ap.add_argument("-S", metavar="STAT", action="append", help="Enable statistic %(metavar)s; default is all options.", choices = sorted(STATS))
+    args, networks = init(sys.argv, ap)
     
-    # XXX dirtyyyyy: filter the things, throwing away the code entirely
+    # XXX dirtyyyyy: filter the things, throwing away the functions entirely
     if args.N:
         NETWORK_TYPES = {n: NETWORK_TYPES[n] for n in args.N}
     if args.S:
@@ -390,5 +390,5 @@ if __name__ == "__main__":
     # block so the user can see plots
     # (we do this instead of just letting plt.show() block because this way all plots appear side-by-side)
     if args.plots:
-        input("Press enter to quit, once you have observed the plots.")
+        input("Press enter to quit, once you have observed the plots. ")
 
