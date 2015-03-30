@@ -1,5 +1,6 @@
 
 from itertools import chain
+import logging
 
 def list_ret(g):
     """
@@ -62,6 +63,6 @@ def dbg(f):
             print(locals())
             import IPython; IPython.embed()
         finally:
-            print("%s(*%s,**%s) = %s" % (f.__name__, args, kwargs, repr(r)))
+            logging.debug("%s(*%s,**%s) = %s" % (f.__name__, args, kwargs, repr(r)))
     return ff
 
