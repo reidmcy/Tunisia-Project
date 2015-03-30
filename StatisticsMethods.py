@@ -43,7 +43,6 @@ def getDensity(nets):
     networks = sorted(nets.items())
     series = {stat.__name__: [stat(n) for m,n in networks] for stat in [nx.density]}
     table = pandas.DataFrame(series, index=dates)
-    print(table)
     for col in table.columns:
         plt.figure()
         table[col].plot()
