@@ -3,6 +3,13 @@
 ...
 """
 
+# TODO:
+# [ ] profile for speed; it's kinda slow on the larger networks...
+# [ ] make significance testing work (and summarize nicely in pandas table)
+#   -> this is tricky because our data are *not* independently sampled, which screws up most test
+# [ ] make the hist2d thing work again
+# [ ] make py2 compatible
+
 from __future__ import print_function
 from __future__ import division
 
@@ -93,11 +100,11 @@ def hist2d(stat):
 # ----------------------------------
 
 
-NETWORK_TYPES = {e: getattr(NetworkMakers, e) for e in NetworkMakers.__all__}
-NETWORK_TYPES = { #DEBUG version
+
+NETWORK_TYPES = {
         "Countries": NetworkMakers.MakeCoCountry,
-        #"Cities": NetworkMakers.MakeCoCity,
-        #"Authors": MakeCoAuth,
+        "Cities": NetworkMakers.MakeCoCity,
+        "Authors": NetworkMakers.MakeCoAuth,
         }
 
 
@@ -327,8 +334,18 @@ if __name__ == "__main__":
     global args #XXX sketchy
     args = argparse.ArgumentParser(description="Compute statistics over time for our project")
     args.add_argument("-p", "--plots", action="store_true", help="Display plots; if false, plots will be saved to files")
+    args.add_argument("-N", action="append", help="Enable network type N; default is all options: %s. " % ", ".join(sorted(NETWORK_TYPES)))
+    args.add_argument("-S", action="append", help="Enable statistic S; default is all options: %s" % ", ".join(sorted(STATS)))
     args, networks = init(sys.argv, args)
     
+    # XXX dirtyyyyy: filter the things, throwing away the code entirely
+    if args.N:
+        NETWORK_TYPES = {n: NETWORK_TYPES[n] for n in args.N}
+    if args.S:
+        STATS = {s: STATS[s] for s in args.S}
+    
+    logging.debug("Enabled network types: %s", ", ".join(sorted(NETWORK_TYPES))) #TODO: factor
+    logging.debug("Enabled statistics: %s", ", ".join(sorted(STATS)))
     
     if args.plots:
         # enable nonblocking matplotlib (and manually hang at the end of the script instead)
