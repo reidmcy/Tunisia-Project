@@ -72,10 +72,3 @@ def isiParser(isifile):
         pass
     finally:
         return plst
-
-def getFiles(suffix='.isi'):
-    """
-    getFiles reads the current directory and returns all files ending with
-    suffix. Terminates the program if none are found, no exceptions thrown.
-    """
-    return sys.argv[1:] if sys.argv[1:] else [f for f in os.listdir(".") if f.endswith(suffix)]

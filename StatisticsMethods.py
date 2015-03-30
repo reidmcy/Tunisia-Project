@@ -11,17 +11,7 @@ import IPython
 
 from scipy.stats import chisquare
 
-outputDirectory = "OutputGraphs"
 
-def sci2IsNotGood(fname):
-    """
-    Parsing xml without a parse is always a good idea
-    """
-    c = open(fname).readlines()
-    f = open(fname, 'w')
-    for l in c:
-        if 'for="graph"' not in l and '<data key="d0">' not in l:
-            f.write(l)
 
 def getBasicInfo(nets):
     for k in nets.keys():

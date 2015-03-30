@@ -1,28 +1,28 @@
 #!/usr/bin/env python
+"""
+...
+"""
+
 from __future__ import print_function
 from __future__ import division
+
+import sys, os
+import argparse
+from itertools import groupby
+import logging
+
+import numpy
+import matplotlib.pyplot as plt
+import networkx as nx
+
 
 import papersParse
 from isiparse import parse_year, parse_month
 import NetworkMakers
 import StatisticsMethods as sm
 
-import sys
-from itertools import groupby
-import networkx as nx
-import matplotlib.pyplot as plt
-
 from util import *
 
-import argparse
-import logging
-
-
-import numpy
-
-# TODO:
-# [ ] repair naming and titling of plots and output files
-# [ ] pull ExportGraphs out
 
 # ----------------------------------
 # helpers
@@ -232,45 +232,6 @@ def bin_documents(documents, byMonth=True):
     r = dict((k, list(v)) for k,v in r) #since groupbys is a sneaky jerk---iterating over the outer elements implicitly iterates over the inner ones, losing them forever---express it to a dict.
     return r
 
-def init(argv, ap=None):
-    """
-    common initialization code for all scripts in this project
-    ap should be an argparse.ArgumentParser instance;
-    (if not given, an empty one is created)
-    common options are attached to the argument parser, and data is loaded
-    """
-    if ap is None:
-        ap = argparse.ArgumentParser()
-    
-    if ap.description is None:
-        ap.description = "Process .isi files for our project"
-    
-    
-    ap.add_argument("-d", "--debug", action="store_true", help="Enable debug prints")
-    ap.add_argument("-y", "--years", action="store_true", help="Bin by year; if false, will bin by month")
-    ap.add_argument("--notunisia", action="store_true", help="Include Tunisia in co-country networks")
-    ap.add_argument("papers", nargs="*", help="Files to load from. If not given, **the current directory is scanned for .isi files**")
-    args = ap.parse_args(argv[1:])
-    
-    # special case: remove Tunisia from the Countries network
-    # XXX can this be done cleaner? It's half-stateful...
-    if args.notunisia and 'Countries' in NETWORK_TYPES:
-        NETWORK_TYPES['Countries'] = node_remover(NETWORK_TYPES['Countries'], 'Tunisia')
-    
-    if args.debug:
-        logging.root.setLevel(logging.DEBUG)
-        logging.debug("Enabled debugging output")
-    
-    # load papers
-    if not args.papers: #scan the current directory
-        args.papers = papersParse.getFiles()
-    if not args.papers:
-        #checks for any valid files
-        print("No data files given.")
-        ap.print_usage()
-        sys.exit(-1)
-    
-    return args
 
 def load(*documents):
     """
@@ -313,7 +274,48 @@ def load(*documents):
     
     return networks
 
-def main(argv):
+def init(argv, ap=None):
+    """
+    common initialization code for all scripts in this project
+    ap should be an argparse.ArgumentParser instance;
+    (if not given, an empty one is created)
+    common options are attached to the argument parser, and data is loaded
+    """
+    if ap is None:
+        ap = argparse.ArgumentParser()
+    
+    if ap.description is None:
+        ap.description = "Process .isi files for our project"
+    
+    ap.add_argument("-d", "--debug", action="store_true", help="Enable debug prints")
+    ap.add_argument("-y", "--years", action="store_true", help="Bin by year; if false, will bin by month")
+    ap.add_argument("--notunisia", action="store_true", help="Include Tunisia in co-country networks")
+    ap.add_argument("documents", nargs="*", help="Files to load from. If not given, **the current directory is scanned for .{isi,ciw} files**")
+    args = ap.parse_args(argv[1:])
+    
+    
+    # special case: remove Tunisia from the Countries network
+    # XXX can this be done cleaner? It's half-stateful...
+    if args.notunisia and 'Countries' in NETWORK_TYPES:
+        NETWORK_TYPES['Countries'] = node_remover(NETWORK_TYPES['Countries'], 'Tunisia')
+    
+    if args.debug:
+        logging.root.setLevel(logging.DEBUG)
+        logging.debug("Enabled debugging output")
+        logging.debug("Received these arguments:", args)
+    
+    # load papers
+    if not args.documents: #scan the current directory
+        args.documents = [f for f in os.listdir(".") if (f.endswith(".isi") or f.endswith(".ciw"))]
+    if not args.documents:
+        print("No data files found.")
+        ap.print_usage()
+        sys.exit(-1)
+    
+    return args, load(*args.documents)
+
+
+if __name__ == "__main__":
     # enable nonblocking matplotlib
     # this makes *all plots appear at once* if -p is given
     plt.interactive(True)
@@ -322,9 +324,7 @@ def main(argv):
     global args #XXX sketchy
     args = argparse.ArgumentParser(description="Compute statistics over time for our project")
     args.add_argument("-p", "--plots", action="store_true", help="Display plots; if false, plots will be saved to files")
-    args = init(argv, args)
-    
-    networks = load(*args.papers)
+    args, networks = init(sys.argv, args)
     
     # for each (network type, date, statistic) compute and store the network single scalar value of that statistic measured on that network
     logging.debug("computing statistics")
@@ -342,8 +342,3 @@ def main(argv):
     # (we do this instead of just letting plt.show() block because this way all plots appear side-by-side)
     if args.plots:
         input("Press enter to quit, once you have observed the plots.")
-
-
-if __name__ == "__main__":
-    import sys
-    main(sys.argv)
