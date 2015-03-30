@@ -28,7 +28,8 @@ if __name__ == "__main__":
     global args #XXX sketchy
     args = argparse.ArgumentParser(description="Compute statistics over time for our project")
     args.add_argument("-o", help="Top level directory to place results in.", default="OutputGraphs")
-    args, networks = init(sys.argv, args)
+    args = init(sys.argv, args)
+    networks = load(*args.documents)
     
     outputDirectory = args.o
     if not os.path.exists(outputDirectory):

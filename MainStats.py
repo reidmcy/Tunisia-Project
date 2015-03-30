@@ -324,8 +324,7 @@ def init(argv, ap=None):
         ap.print_usage()
         sys.exit(-1)
     
-    # load papers
-    return args, load(*args.documents)
+    return args
 
 
 if __name__ == "__main__":
@@ -334,15 +333,15 @@ if __name__ == "__main__":
     global args #XXX sketchy
     ap = argparse.ArgumentParser(description="Compute statistics over time for our project.")
     ap.add_argument("-p", "--plots", action="store_true", help="Display plots; if false, plots will be saved to files")
-    ap.add_argument("-N", metavar="NET", action="append", help="Enable network type %(metavar)s; default is all options.", choices = sorted(NETWORK_TYPES))
-    ap.add_argument("-S", metavar="STAT", action="append", help="Enable statistic %(metavar)s; default is all options.", choices = sorted(STATS))
-    args, networks = init(sys.argv, ap)
+    ap.add_argument("-N", dest="NET", action="append", help="Enable network type %(dest)s; default is all options.", choices = sorted(NETWORK_TYPES))
+    ap.add_argument("-S", dest="STAT", action="append", help="Enable statistic %(dest)s; default is all options.", choices = sorted(STATS))
+    args = init(sys.argv, ap)
     
     # XXX dirtyyyyy: filter the things, throwing away the functions entirely
-    if args.N:
-        NETWORK_TYPES = {n: NETWORK_TYPES[n] for n in args.N}
-    if args.S:
-        STATS = {s: STATS[s] for s in args.S}
+    if args.NET:
+        NETWORK_TYPES = {n: NETWORK_TYPES[n] for n in args.NET}
+    if args.STAT:
+        STATS = {s: STATS[s] for s in args.STAT}
     
     logging.debug("Enabled network types: %s", ", ".join(sorted(NETWORK_TYPES))) #TODO: factor
     logging.debug("Enabled statistics: %s", ", ".join(sorted(STATS)))
@@ -351,6 +350,9 @@ if __name__ == "__main__":
         # enable nonblocking matplotlib (and manually hang at the end of the script instead)
         # this makes *all plots appear at once* if -p is given
         plt.interactive(True)
+    
+    logging.debug("loading %s", args.documents)
+    networks = load(*args.documents)
     
     # for each (network type, date, statistic) compute and store the network single scalar value of that statistic measured on that network
     logging.debug("computing statistics")
