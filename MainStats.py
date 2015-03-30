@@ -245,30 +245,33 @@ def load(*documents):
         # DEBUG
         logging.debug("fuzzing document set to shake out bugs")
         import random
-        documents = list(documents)
+        documents = list(documents) #observation: even on 30000 records, this shuffle barely adds anything to the runtime.
+        N = len(documents)
         random.shuffle(documents)
     
-    
     # filter out badly dated documents
+    # This tends to cull our dataset significantly, but, at least on the datasets we've checked,
+    # uniformly, so all normalized statistics should be un(statistically-speaking)affected.
     documents = (d for d in documents if valid_date(date(d, not args.years)))
-    
+    if args.debug:
+        documents = list(documents)
+        logging.debug("%02.02f%% of our documents had invalid dates, and were rejected.", 100*(1 - len(documents)/N))
     
     # group documents by date
     if args.debug:
         #DEBUG: ensure we get the same number of documents back
-        documents = list(documents) #need to express the whole sequence that we may take its len
+        documents = list(documents) #express fully that we may interrogate yet still use it
         N = len(documents)
     logging.debug("grouping documents by date")
     documents_over_time = bin_documents(documents, not args.years)
     if args.debug:
-        documents_over_time = [(k,list(v)) for k, v in documents_over_time.items()] #express fully that we may interrogate and still use
-        assert sum(len(docs) for date,docs in documents_over_time) == N, "Binned documents should add up to the original count (%d); instead got %d" % (N, sum(len(docs) for date,docs in documents_over_time))
+        assert sum(len(docs) for date,docs in documents_over_time.items()) == N, "Binned documents should add up to the original count (%d); instead got %d" % (N, sum(len(docs) for date,docs in documents_over_time))
     
     # rewrite the paper bins as networks
     # we do this all at once for simplicity, but it might be possible to get this more efficient (however, remember that documents_over_time can only be iterated once
     logging.debug("transforming groups into networks")
     networks = {(net_type, date): network_maker(bin)
-                                for date, bin in documents_over_time
+                                for date, bin in documents_over_time.items()
                                 for net_type, network_maker in NETWORK_TYPES.items()
                                 }
     
@@ -281,6 +284,8 @@ def init(argv, ap=None):
     (if not given, an empty one is created)
     common options are attached to the argument parser, and data is loaded
     """
+    global args #XXX sketchy
+    
     if ap is None:
         ap = argparse.ArgumentParser()
     
@@ -302,16 +307,17 @@ def init(argv, ap=None):
     if args.debug:
         logging.root.setLevel(logging.DEBUG)
         logging.debug("Enabled debugging output")
-        logging.debug("Received these arguments:", args)
+        logging.debug("Received these arguments: %s", args)
     
-    # load papers
-    if not args.documents: #scan the current directory
+    if not args.documents:
+        #fall back on scanning the current directory
         args.documents = [f for f in os.listdir(".") if (f.endswith(".isi") or f.endswith(".ciw"))]
     if not args.documents:
         print("No data files found.")
         ap.print_usage()
         sys.exit(-1)
     
+    # load papers
     return args, load(*args.documents)
 
 

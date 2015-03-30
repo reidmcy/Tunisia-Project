@@ -7,13 +7,14 @@ from MainStats import init, NETWORK_TYPES #TODO: move these out of MainStats
 import logging
 import argparse
 
+import networkx as nx
 
 def sci2IsNotGood(fname):
     """
     modify xml so sci2 can read it
     Parsing xml without a parse is always a good idea
     """
-    with open(fname).readlines() as c:
+    with open(fname) as c:
         with open(fname+".part", 'w') as f:
             for l in c:
                 if 'for="graph"' not in l and '<data key="d0">' not in l:
@@ -35,7 +36,8 @@ if __name__ == "__main__":
     
     for k, n in networks.items():
         fname = "_".join(map(str, k))
+        fname +=  '.graphml'
         fname = os.path.join(outputDirectory, fname)
         logging.info("writing " + fname)
-        nx.write_graphml(n, fname + '.graphml')
-        sci2IsNotGood(fname + '.graphml')
+        nx.write_graphml(n, fname)
+        sci2IsNotGood(fname)
