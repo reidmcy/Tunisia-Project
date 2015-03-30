@@ -14,7 +14,7 @@ import logging
 import numpy
 import matplotlib.pyplot as plt
 import networkx as nx
-
+import pandas
 
 import papersParse
 from isiparse import parse_year, parse_month
@@ -340,6 +340,14 @@ if __name__ == "__main__":
                                             }
     
     # reflow that dict into a DataFrame
+    # tip adapted from http://stackoverflow.com/questions/19961490/construct-pandas-dataframe-from-list-of-tuples
+    logging.debug("reflowing statistics to a DataFrame")
+    statistics = pandas.DataFrame(list(k+(v,) for k,v in statistics.items()), columns=["network","date","statistic","value"])
+    # and of course we have to bang it with pots and pans to make it behave
+    statistics["network"] = statistics["network"].astype("category")
+    statistics["statistic"] = statistics["statistic"].astype("category")
+    statistics = statistics.sort(["network","statistic","date"])
+    statistics = statistics.set_index(["network","date","statistic"])
     import IPython; IPython.embed()
     
     # make plots
@@ -348,3 +356,4 @@ if __name__ == "__main__":
     # (we do this instead of just letting plt.show() block because this way all plots appear side-by-side)
     if args.plots:
         input("Press enter to quit, once you have observed the plots.")
+
