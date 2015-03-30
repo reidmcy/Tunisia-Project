@@ -292,6 +292,7 @@ def init(argv, ap=None):
     common options are attached to the argument parser, and data is loaded
     """
     global args #XXX sketchy
+    global NETWORK_TYPES
     
     if ap is None:
         ap = argparse.ArgumentParser()
@@ -299,12 +300,16 @@ def init(argv, ap=None):
     if ap.description is None:
         ap.description = "Process .isi files for our project"
     
+    ap.add_argument("-N", dest="NET", action="append", help="Enable network type %(dest)s; default is all options.", choices = sorted(NETWORK_TYPES))
     ap.add_argument("-d", "--debug", action="store_true", help="Enable debug prints")
     ap.add_argument("-y", "--years", action="store_true", help="Bin by year; if false, will bin by month")
     ap.add_argument("--notunisia", action="store_true", help="Remove Tunisia from co-country networks")
     ap.add_argument("documents", nargs="*", help="Files to load from. If not given, **the current directory is scanned for .{isi,ciw} files**")
     args = ap.parse_args(argv[1:])
     
+    # XXX dirtyyyyy: filter the things, throwing away the functions entirely
+    if args.NET:
+        NETWORK_TYPES = {n: NETWORK_TYPES[n] for n in args.NET}
     
     # special case: remove Tunisia from the Countries network
     # XXX can this be done cleaner? It's half-stateful...
@@ -333,13 +338,10 @@ if __name__ == "__main__":
     global args #XXX sketchy
     ap = argparse.ArgumentParser(description="Compute statistics over time for our project.")
     ap.add_argument("-p", "--plots", action="store_true", help="Display plots; if false, plots will be saved to files")
-    ap.add_argument("-N", dest="NET", action="append", help="Enable network type %(dest)s; default is all options.", choices = sorted(NETWORK_TYPES))
     ap.add_argument("-S", dest="STAT", action="append", help="Enable statistic %(dest)s; default is all options.", choices = sorted(STATS))
     args = init(sys.argv, ap)
     
     # XXX dirtyyyyy: filter the things, throwing away the functions entirely
-    if args.NET:
-        NETWORK_TYPES = {n: NETWORK_TYPES[n] for n in args.NET}
     if args.STAT:
         STATS = {s: STATS[s] for s in args.STAT}
     
