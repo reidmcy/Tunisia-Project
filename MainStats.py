@@ -102,11 +102,17 @@ NETWORK_TYPES = { #DEBUG version
 
 #<--- these two are almost perfectly correlated, which is a super strong suggestion that the degree distribution is exponential, which is the only(?) distribution with mean equal to standard deviation
 
-GLOBAL_STATS = {
-    'density': nx.density,
-    'size': lambda G: len(G),
-    }
+
+def degree_centrality(G, *args, **kwargs):
+    """
+    monkey-patch degree_centrality() to properly handle single-node networks
     
+    toads and hobgoblins! arg
+    """
+    if len(G)<2: return {n: 0 for n in G}
+    return nx.degree_centrality._original(G, *args, **kwargs)
+degree_centrality._original, nx.degree_centrality = nx.degree_centrality, degree_centrality;
+del degree_centrality;
 
     
 PER_NODE_STATS = {
