@@ -83,8 +83,8 @@ def hist2d(stat):
 
 NETWORK_TYPES = {e: getattr(NetworkMakers, e) for e in NetworkMakers.__all__}
 NETWORK_TYPES = { #DEBUG version
-        #"Countries": MakeCoCountry,
-        "Cities": NetworkMakers.MakeCoCity,
+        "Countries": NetworkMakers.MakeCoCountry,
+        #"Cities": NetworkMakers.MakeCoCity,
         #"Authors": MakeCoAuth,
         }
 
@@ -170,17 +170,24 @@ def parse_crufty_date(paper):
     
     return (parse_crufty_year(paper), month)
 
-def filterNetworks(nets):
+def date(document, byMonth=True): #:( :(
+    return (parse_crufty_date if byMonth else parse_crufty_year)(document)
+    
+    
+def valid_date(date, YEARS=(2006,2015)): #this is a python-style half open range: [startyear=2006, endyear=2015)
     """
-        brutally remove bad data (to infinity and the sandwurms!)
+     clip to only the years we care about and remove invalid (e.g. unparseable) dates
     """
-    retDict = {}
-    for m in nets.keys():
-        if m[0] != 2015 and m[0] != -1:
-            retDict[m] = nets[m]
-            if removeTunsia and retDict[m].has_node('Tunisia'):
-                retDict[m].remove_node('Tunisia')
-    return retDict
+    
+    try:
+        year, month = date
+        if month not in range(1,12+1): return False
+    except (TypeError, ValueError): #:( :( @ "exceptions-as-returns"
+        year = date
+    
+    return year in range(*YEARS)
+
+
 
 def bin_documents(documents, byMonth=True):
     """
@@ -189,12 +196,16 @@ def bin_documents(documents, byMonth=True):
     documents: a sequence of ISI document objects (currently: as defined by papersParse)
     byMonth:   a flag which switches between grouping by month or by year.
     
-    returns: a sequence of (date, [papers])
-             beware: this is a generator, so you can exhaust it.
-                     if you need it more than once, coerce the result to a list.
+    returns: a dictionary {date: [documents]}
+    
+    precondition: all documents have valid dates (as according to valid_date)
     """
-    r = groupby(documents, parse_crufty_date if byMonth else parse_crufty_year)
-    return {k: list(v) for k, v in r}.items()
+    date_term = lambda d: date(d, byMonth) #key function
+    
+    r = sorted(documents, key = date_term) #we need to sort first because groupby is *not* the same as a SQL groupby; rather it's like unix `uniq`
+    r = groupby(r, key = date_term)
+    r = dict((k, list(v)) for k,v in r) #since groupbys is a sneaky jerk---iterating over the outer elements implicitly iterates over the inner ones, losing them forever---express it to a dict.
+    return r
 
 def init(argv, ap=None):
     """
@@ -235,28 +246,19 @@ def init(argv, ap=None):
         sys.exit(-1)
     documents = flatten(papersParse.isiParser(fname) for fname in args.papers) #TODO: replace the inner seq with a generator so this doesn't lag so hard
     
-    # DEBUG: fuzz the document set to shake out bugs
-    # remove this for actual processing
-    import random
-    documents = list(documents)
-    random.shuffle(documents)
+    if args.debug:
+        # DEBUG
+        logging.debug("fuzzing document set to shake out bugs")
+        import random
+        documents = list(documents)
+        random.shuffle(documents)
     
     return args, documents
-
-def valid_date(date, YEARS=(2006,2015)): #this is a python-style half open range: [startyear=2006, endyear=2015)
-    if args.years:
-        year = date
-    else:
-        year, month = date
-        if month not in range(1,12+1): return False
-    
-    return year in range(*YEARS)
 
 def main(argv):
     # enable nonblocking matplotlib
     # this makes *all plots appear at once* if -p is given
     plt.interactive(True)
-    
     
     # read command line arguments and load data
     global args #XXX sketchy
@@ -264,16 +266,25 @@ def main(argv):
     args.add_argument("-p", "--plots", action="store_true", help="Display plots; if false, plots will be saved to files")
     args, documents = init(argv, args)
     
-    # group documents by month
-    documents_over_time = bin_documents(documents, not args.years)
+    # filter out badly dated documents
+    documents = (d for d in documents if valid_date(date(d, not args.years)))
     
+    
+    # group documents by date
+    if args.debug:
+        #DEBUG: ensure we get the same number of documents back
+        documents = list(documents) #need to express the whole sequence that we may take its len
+        N = len(documents)
+    documents_over_time = bin_documents(documents, not args.years)
+    if args.debug:
+        documents_over_time = [(k,list(v)) for k, v in documents_over_time.items()] #express fully that we may interrogate and still use
+        assert sum(len(docs) for date,docs in documents_over_time) == N, "Binned documents should add up to the original count (%d); instead got %d" % (N, sum(len(docs) for date,docs in documents_over_time))
     
     # rewrite the paper bins as networks
     # we do this all at once for simplicity, but it might be possible to get this more efficient (however, remember that documents_over_time can only be iterated once
     networks = {(net_type, date): network_maker(paper_bin)
                                 for date, paper_bin in documents_over_time
                                 for net_type, network_maker in NETWORK_TYPES.items()
-                                if valid_date(date) # clip to only the years we care about; as a useful side effect, remove invalid (e.g. unparseable) dates
                                 }
     
     # for each (network type, date, statistic) compute and store the network single scalar value of that statistic measured on that network
