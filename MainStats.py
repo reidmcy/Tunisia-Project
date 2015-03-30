@@ -54,12 +54,12 @@ def vectorize_per_node_stat(stat):
 
 def average(stat):
     def w(G):
-        return vectorize_per_node_stat(stat)(G).mean()
+        return numpy.array(stat(G)).mean()
     return w
     
 def stddev(stat):
     def w(G):
-        return vectorize_per_node_stat(stat)(G).std()
+        return numpy.array(stat(G)).std()
     return w
     
 def hist2d(stat):
@@ -128,9 +128,9 @@ del degree_centrality;
 
     
 PER_NODE_STATS = { #these are computed suuuuuper inefficiently; maybe memoize them?
-    'Degree Centrality': dbg(lambda G, n: nx.degree_centrality(G)[n] ), #'if len(G)' works around a bug in degree_centrality: it doesn't know how to handle single-node networks. Jerk.
-    'Betweenness Centrality': lambda G, n: nx.betweenness_centrality(G)[n], #factorable?
-    'Clustering Coefficient': lambda G, n: nx.clustering(G, n), #factorable? (maybe not: not all nx ops have the same signature)
+    'Degree Centrality': lambda G: list(nx.degree_centrality(G).values()),
+    'Betweenness Centrality': lambda G: list(nx.betweenness_centrality(G).values()), #factorable?
+    'Clustering Coefficient': lambda G: list(nx.clustering(G).values()),
     } 
 
 STATS = {
