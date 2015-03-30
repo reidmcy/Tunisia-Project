@@ -348,6 +348,14 @@ if __name__ == "__main__":
     statistics["statistic"] = statistics["statistic"].astype("category")
     statistics = statistics.sort(["network","statistic","date"])
     statistics = statistics.set_index(["network","date","statistic"])
+
+    # for each *statistic* display its progress with each type of network as a different line
+    statistics = statistics.unstack("network")    
+    for stat_name in statistics.index.levels[-1]:
+        subset = statistics.loc[(slice(None),stat_name),:] #the slice(None) is a wart of pandas: loc can both index only down rows (the "index") or across rows and columns, and which it does is slightly ambiguous; the docs warn about this: http://pandas.pydata.org/pandas-docs/stable/advanced.html "You should specify all axes in the .loc specifier, meaning the indexer for the index and for the columns. Their are some ambiguous cases where the passed indexer could be mis-interpreted as indexing both axes, rather than into say the MuliIndex for the rows." LIKE A JERK
+        print(subset)
+        subset.plot(title=stat_name)
+        #plt.xlabel("Date")
     import IPython; IPython.embed()
     
     # make plots
