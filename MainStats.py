@@ -322,15 +322,18 @@ def init(argv, ap=None):
 
 
 if __name__ == "__main__":
-    # enable nonblocking matplotlib
-    # this makes *all plots appear at once* if -p is given
-    plt.interactive(True)
     
     # read command line arguments and load data
     global args #XXX sketchy
     args = argparse.ArgumentParser(description="Compute statistics over time for our project")
     args.add_argument("-p", "--plots", action="store_true", help="Display plots; if false, plots will be saved to files")
     args, networks = init(sys.argv, args)
+    
+    
+    if args.plots:
+        # enable nonblocking matplotlib (and manually hang at the end of the script instead)
+        # this makes *all plots appear at once* if -p is given
+        plt.interactive(True)
     
     # for each (network type, date, statistic) compute and store the network single scalar value of that statistic measured on that network
     logging.debug("computing statistics")
@@ -350,13 +353,23 @@ if __name__ == "__main__":
     statistics = statistics.set_index(["network","date","statistic"])
 
     # for each *statistic* display its progress with each type of network as a different line
-    statistics = statistics.unstack("network")    
+    statistics = statistics.unstack("network")
+    statistics.columns = [net_type for (value, net_type) in statistics.columns] # kludge over a weirdness: unstack() results in naming (i.e. indexing) the column as (value, Network); this causes ugliness when plotting, so stab it good
     for stat_name in statistics.index.levels[-1]:
         subset = statistics.loc[(slice(None),stat_name),:] #the slice(None) is a wart of pandas: loc can both index only down rows (the "index") or across rows and columns, and which it does is slightly ambiguous; the docs warn about this: http://pandas.pydata.org/pandas-docs/stable/advanced.html "You should specify all axes in the .loc specifier, meaning the indexer for the index and for the columns. Their are some ambiguous cases where the passed indexer could be mis-interpreted as indexing both axes, rather than into say the MuliIndex for the rows." LIKE A JERK
-        print(subset)
+        
+        # similar to the above, this hackily silences the static labels
+        subset, subset.columns = subset.unstack("statistic"), subset.columns
+        
+        logging.debug("%s results", stat_name) #omg why is this not the same API as print()?
+        logging.debug(subset)
+        
         subset.plot(title=stat_name)
-        #plt.xlabel("Date")
-    import IPython; IPython.embed()
+        
+        if not args.plots:
+            plt.savefig("stat_name.svg")
+        
+    #import IPython; IPython.embed();
     
     # make plots
     
