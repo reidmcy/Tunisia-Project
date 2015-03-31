@@ -53,9 +53,9 @@ def MakeCoCountry(plst):
                         c2 = getCountry(loc2)
                         if c2:
                             if retGrph.has_edge(c1[0], c2[0]):
-                                retGrph[c1[0]][c2[0]]['weight'] += c1[1] + c2[1]
+                                retGrph[c1[0]][c2[0]]['weight'] += c1[1] * c2[1]
                             elif c1[0] != c2[0]:
-                                retGrph.add_edge(c1[0], c2[0], weight = c1[1] + c2[1])
+                                retGrph.add_edge(c1[0], c2[0], weight = c1[1] * c2[1])
         except KeyError as e:
             #print "Key Error"
             #print p.keys()
@@ -75,9 +75,9 @@ def MakeCoCity(plst):
                         c2 = getCity(loc2)
                         if c2:
                             if retGrph.has_edge(c1[0], c2[0]):
-                                retGrph[c1[0]][c2[0]]['weight'] += c1[1] + c2[1]
+                                retGrph[c1[0]][c2[0]]['weight'] += c1[1] * c2[1]
                             elif c1[0] != c2[0]:
-                                retGrph.add_edge(c1[0], c2[0], weight = c1[1] + c2[1])
+                                retGrph.add_edge(c1[0], c2[0], weight = c1[1] * c2[1])
         except KeyError as e:
             #print "Key Error"
             #print p.keys()
@@ -97,9 +97,9 @@ def MakeCoOrg(plst):
                         c2 = getInstitute(loc2)
                         if c2:
                             if retGrph.has_edge(c1[0], c2[0]):
-                                retGrph[c1[0]][c2[0]]['weight'] += c1[1] + c2[1]
+                                retGrph[c1[0]][c2[0]]['weight'] += c1[1] * c2[1]
                             elif c1[0] != c2[0]:
-                                retGrph.add_edge(c1[0], c2[0], weight = c1[1] + c2[1])
+                                retGrph.add_edge(c1[0], c2[0], weight = c1[1] * c2[1])
         except KeyError as e:
             #print "Key Error"
             #print p.keys()

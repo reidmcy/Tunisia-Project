@@ -16,16 +16,16 @@ suppressGraphs = False
 removeTunsia = True
 
 NETWORKS = [
-        #MakeCoAuth,
+        MakeCoAuth,
         #MakeCoOrg,
         MakeCoCity,
-        #MakeCoCountry,
+        MakeCoCountry,
         ]
 
 STATS = [
         #sm.getBasicInfo,
         sm.ExportGraphs,
-        sm.getDensity,
+        #sm.getDensity,
         #sm.getAverageDegree,
         ]
 
