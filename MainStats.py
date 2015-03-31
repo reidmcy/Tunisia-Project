@@ -24,7 +24,7 @@ import networkx as nx
 import pandas
 
 import papersParse
-from isiparse import parse_year, parse_month
+from isiparse import parse_year, parse_month #i'm sorry
 import NetworkMakers
 import StatisticsMethods as sm
 
@@ -107,25 +107,6 @@ NETWORK_TYPES = {
         "Authors": NetworkMakers.MakeCoAuth,
         }
 
-<<<<<<< HEAD
-binByMonth = True
-suppressGraphs = False
-removeTunsia = True
-
-NETWORKS = [
-        MakeCoAuth,
-        #MakeCoOrg,
-        MakeCoCity,
-        MakeCoCountry,
-        ]
-
-STATS = [
-        #sm.getBasicInfo,
-        #sm.ExportGraphs,
-        #sm.getDensity,
-        sm.getAverageDegree,
-        ]
-=======
 
     
 # (per-node -> {average, std dev, 2d histogram})
@@ -137,7 +118,6 @@ STATS = [
 #
 # within this, there are several obvious sub-categories:
 # 
->>>>>>> d9bea74b82228b4ed3278d18dade4dc7fa78572a
 
 #<--- these two are almost perfectly correlated, which is a super strong suggestion that the degree distribution is exponential, which is the only(?) distribution with mean equal to standard deviation
 
@@ -155,14 +135,15 @@ del degree_centrality;
 
     
 PER_NODE_STATS = { #these are computed suuuuuper inefficiently; maybe memoize them?
-    'Degree Centrality': lambda G: list(nx.degree_centrality(G).values()),
-    'Betweenness Centrality': lambda G: list(nx.betweenness_centrality(G).values()), #factorable?
-    'Clustering Coefficient': lambda G: list(nx.clustering(G).values()),
+    'Degree Centrality': lambda G: list(nx.degree_centrality(G, weight='weight').values()),
+    'Betweenness Centrality': lambda G: list(nx.betweenness_centrality(G, weight='weight').values()), #factorable?
+    'Clustering Coefficient': lambda G: list(nx.clustering(G, weight='weight').values()),
     } 
 
 STATS = {
     'Size': lambda G: len(G),
     'Density': nx.density,
+    
     }
 STATS.update({"Average "+k: average(f) for k, f in PER_NODE_STATS.items()})
 STATS.update({"StdDev "+k: stddev(f) for k, f in PER_NODE_STATS.items()})
@@ -404,6 +385,13 @@ if __name__ == "__main__":
         
         logging.debug("%s results", stat_name) #omg why is this not the same API as print()?
         logging.debug(subset)
+        
+        # XXX KLUDGE
+        from scipy.stats import chisquare
+        for col in subset.columns:
+            _, p = chisquare(subset.ix[:,col])
+            print(col, stat_name, ("not " if (p>0.05) else "") + "significant","p=%.03f" % p)
+        #import IPython; IPython.embed(); break
         
         subset.plot(title=stat_name)
         

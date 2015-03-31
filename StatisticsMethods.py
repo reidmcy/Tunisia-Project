@@ -32,13 +32,6 @@ def getDensity(nets):
     plt.show()
 
 def mean(l):
-<<<<<<< HEAD
-        l = list(l)
-        if l:
-            return sum(l)/len(l)
-        else:
-            return 0
-=======
     return numpy.array(list(l)).mean()
 
 def std(l): #omg why
@@ -86,11 +79,9 @@ def getSize(nets): #:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :( :(:( :
     d.plot()
     plt.title(str(list(nets.values())[0]).split('_')[0] + ' Size')
     plt.show()
->>>>>>> d9bea74b82228b4ed3278d18dade4dc7fa78572a
 
 def getAverageDegree(nets):
     #IPython.embed()
-    print(str(list(nets.values())[0]).split('_')[0] + ' Average Degree')
     stat = []
     time = []
     for k in nets.keys():
