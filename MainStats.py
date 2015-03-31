@@ -13,10 +13,10 @@ import matplotlib.pyplot as plt
 
 binByMonth = False
 suppressGraphs = False
-removeTunsia = True
+removeTunsia = False
 
 NETWORKS = [
-        MakeCoAuth,
+        #MakeCoAuth,
         #MakeCoOrg,
         MakeCoCity,
         MakeCoCountry,

@@ -16,8 +16,8 @@ def sci2IsNotGood(fname):
     c = open(fname).readlines()
     f = open(fname, 'w')
     for l in c:
-        if 'for="graph"' not in l and '<data key="d0">' not in l:
-            f.write(l)
+        if 'for="graph"' not in l and '<data key="d0">' not in l and 'attr.name="longitude" attr.type="int"' not in l and 'attr.name="latitude" attr.type="int"' not in l:
+            f.write(l.replace('key="d1"', 'key="latitude"').replace('key="d2"', 'key="longitude"').replace('key="d3"', 'key="latitude"').replace('key="d4"', 'key="longitude"'))
 
 def getBasicInfo(nets):
     for k in nets.keys():

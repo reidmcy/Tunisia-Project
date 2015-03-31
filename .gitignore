@@ -4,6 +4,7 @@
 *.graphml
 *.txt
 *.sh
+*.db
 OutputGraphs*/
 
 # Byte-compiled / optimized / DLL files
